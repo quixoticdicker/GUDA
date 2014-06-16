@@ -1,3 +1,3 @@
-Genetic Algorithm Library on CUDA
+GUDA: Genetic Algorithm Library on CUDA
+=======================================
 
-GUDA
