@@ -39,15 +39,6 @@ indiv_t mutate(indiv_t indiv) {
 
 // COMMON PART
 
-void generation(indiv_t *pop, int n) {
-    for (int i = 0; i < n; i++) {
-	// maybe replaced by child
-	indiv_t child = mutate(pop[i]);
-	if (fitness(child) > fitness(pop[i]))
-	    pop[i] = child;
-    }
-}
-
 // utility
 double avg_fitness(indiv_t *pop, int n) {
     double sum = 0.0;
@@ -56,22 +47,59 @@ double avg_fitness(indiv_t *pop, int n) {
     return sum / n;
 }
 
+//
+double avg_value(indiv_t *pop, int n) {
+    double sum = 0.0;
+    for (int i = 0; i < n; i++)
+	sum += pop[i].value;
+    return sum / n;
+}
+
 int main() {
+    int n = 100000;
     srand(time(0));
 
-    // initialize the population
-    int n = 10;
-    indiv_t pop[n];
-    for (int i = 0; i < n; i++)
-	init(&pop[i]);
+    indiv_t old_pop[n];
+    indiv_t new_pop[n];
 
-    printf("%f\n", avg_fitness(pop, n));
+    // initialize the populations
+    for (int i = 0; i < n; i++) {
+	init(&old_pop[i]);
+	new_pop[i] = old_pop[i];
+    }
 
-    // generations
-    for (int g = 0; g < 1000; g++)
-	generation(pop, n);
+    printf("%f\n", avg_fitness(new_pop, n));
+    printf("%f\n", avg_value(new_pop, n));
 
-    printf("%f\n", avg_fitness(pop, n));
+    for (int g = 0; g < 1000; g++) {
+
+	// compute the fitness of the old population
+	double fit[n];
+	for (int i = 0; i < n; i++) {
+	    fit[i] = fitness(old_pop[i]);
+	}
+
+	// tournament selection: 
+	//   pick two random individuals from my old population
+	//   put the best one in my location
+
+	for (int i = 0; i < n; i++) {
+	    int indiv1 = rand() % n;
+	    int indiv2 = rand() % n;
+
+	    if (fit[indiv1] > fit[indiv2])
+		new_pop[i] = old_pop[indiv1];
+	    else
+		new_pop[i] = old_pop[indiv2];
+	}
+
+	for (int i = 0; i < n; i++) {
+	    old_pop[i] = mutate(new_pop[i]);
+	}
+    }
+
+    printf("%f\n", avg_fitness(new_pop, n));
+    printf("%f\n", avg_value(new_pop, n));
 
     return 0;
 }
