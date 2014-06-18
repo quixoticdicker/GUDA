@@ -88,6 +88,14 @@ __device__ float pharaohRand()
 	return curand_uniform(&myState);
 }
 
+double avg_value(Individual* pop, int n)
+{
+    double sum = 0.0;
+    for (int i = 0; i < n; i++)
+	    sum += pop[i].value;
+    return sum / n;
+}
+
 double avg_fitness(Individual* pop, int n)
 {
     double sum = 0.0;
@@ -112,6 +120,7 @@ int main()
 	cudaMemcpyHostToDevice);
 
     printf("Average fitness BEFORE: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 
     evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
 
@@ -119,4 +128,5 @@ int main()
 	cudaMemcpyDeviceToHost);
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 }
