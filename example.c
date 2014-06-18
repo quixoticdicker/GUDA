@@ -29,6 +29,10 @@ double fitness(indiv_t indiv) {
     return -fabs(2.0 - indiv.value * indiv.value);
 }
 
+double fitness(indiv_t indiv) {
+    return -fabs(2.0 - indiv.value * indiv.value);
+}
+
 indiv_t mutate(indiv_t indiv) {
     // random # in [0.9, 1.1)
     double r = ((1.1-0.9) * (double) rand() / (double) RAND_MAX + 0.9);
@@ -47,7 +51,7 @@ double avg_fitness(indiv_t *pop, int n) {
     return sum / n;
 }
 
-//
+// utility
 double avg_value(indiv_t *pop, int n) {
     double sum = 0.0;
     for (int i = 0; i < n; i++)
@@ -56,7 +60,7 @@ double avg_value(indiv_t *pop, int n) {
 }
 
 int main() {
-    int n = 100000;
+    int n = 10000;
     srand(time(0));
 
     indiv_t old_pop[n];
@@ -71,7 +75,7 @@ int main() {
     printf("%f\n", avg_fitness(new_pop, n));
     printf("%f\n", avg_value(new_pop, n));
 
-    for (int g = 0; g < 1000; g++) {
+    for (int g = 0; g < 10; g++) {
 
 	// compute the fitness of the old population
 	double fit[n];
@@ -84,6 +88,8 @@ int main() {
 	//   put the best one in my location
 
 	for (int i = 0; i < n; i++) {
+	    new_pop[i] = old_pop[i];
+
 	    int indiv1 = rand() % n;
 	    int indiv2 = rand() % n;
 
@@ -91,10 +97,16 @@ int main() {
 		new_pop[i] = old_pop[indiv1];
 	    else
 		new_pop[i] = old_pop[indiv2];
+
 	}
 
+	// mutate, but child only replaces child if worse
 	for (int i = 0; i < n; i++) {
-	    old_pop[i] = mutate(new_pop[i]);
+	    indiv_t child = mutate(new_pop[i]);
+	    if (fitness(child) > fitness(new_pop[i]))
+		old_pop[i] = child;
+	    else
+		old_pop[i] = new_pop[i];
 	}
     }
 
