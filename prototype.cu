@@ -1,3 +1,8 @@
+
+struct Individual {
+  double fitness;
+}
+
 __global__ void evolve(Individual* pop, Individual* boat)
 {
 	__shared__ Individual oldPop[POP_PER_ISLAND];
