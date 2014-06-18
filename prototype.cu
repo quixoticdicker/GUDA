@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <cuda.h>
 #include <curand.h>
+#include <curand_kernel.h>
 
-#define POP_PER_ISLAND 1024
+#define POP_PER_ISLAND 256
 #define NUM_ISLANDS 7
+
+__device__ float pharaohRand();
 
 struct Individual {
     double value;
@@ -29,7 +32,7 @@ __device__ void Individual::mutate()
 
 __device__ void Individual::evaluate()
 {
-    fitness = -fabs(2.0 - indiv->value * indiv->value);
+    fitness = -fabs(2.0 - value * value);
 }
 
 __device__ Individual arena(Individual a, Individual b)
@@ -82,7 +85,7 @@ __device__ float pharaohRand()
 	curandState_t myState;
 	curand_init(seed, blockIdx.x * blockDim.x, threadIdx.x, &myState);
 	
-	return curand_uniform(curandState_t);
+	return curand_uniform(&myState);
 }
 
 double avg_fitness(Individual* pop, int n)
