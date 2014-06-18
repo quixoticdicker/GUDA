@@ -1,10 +1,11 @@
-__global__ void evolve()
+__global__ void evolve(Individual* pop, Individual* boat)
 {
 	__shared__ Individual oldPop[POP_PER_ISLAND];
 	__shared__ Individual newPop[POP_PER_ISLAND];
 	int g;
 	
 	oldPop[threadIdx.x] = pop[threadIdx.x + blockIdx.x * blockDim.x];
+	boat[blockIdx.x] = oldPop[0];
 	
 	for(g = 0; g < 100; g++)
 	{
@@ -16,13 +17,14 @@ __global__ void evolve()
 		
 		mutate(newPop[threadIdx.x]);
 		crossover(newPop[threadIdx.x]);
+
+		boat[(bockIdx.x + 1) % NUM_ISLANDS] = newPop[0];
+		__syncthreads()
+		newPop[0] = boat[blockIdx.x];
 		
-		if(idx == 0)
-		{
-			boat[(bockIdx.x + 1) % NUM_ISLANDS] = newPop[0];
-			newPop[0] = boat[blockIdx.x];
-		}
-		__threadsynch();
+		__syncthreads();
+		
+		oldPop[threadIdx.x] = newPop[threadIdx.x];
 	}
 }
 
