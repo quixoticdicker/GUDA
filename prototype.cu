@@ -20,14 +20,14 @@ struct Individual {
 
 __device__ Individual::Individual() {
 	// replace with something random
-	value = 1.0;
+	value = pharaohRand() * 2;
 	fitness = -RAND_MAX;
 }
 
 __device__ void Individual::mutate()
 {
     // replace with something random
-    fitness += (pharaohRand() - .5) / 5;
+	value *= 1 + (pharaohRand() - 0.5) / 5.0;
 }
 
 __device__ void Individual::evaluate()
