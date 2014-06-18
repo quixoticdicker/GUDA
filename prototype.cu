@@ -1,3 +1,6 @@
+#define NUM_ISLANDS 8
+#define POP_PER_ISLAND 256
+
 __global__ void evolve(Individual* pop, Individual* boat)
 {
 	__shared__ Individual oldPop[POP_PER_ISLAND];
@@ -26,6 +29,8 @@ __global__ void evolve(Individual* pop, Individual* boat)
 		
 		oldPop[threadIdx.x] = newPop[threadIdx.x];
 	}
+
+	pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
 }
 
 __device__ Individual evaluation(Individual a, Individual b)
@@ -38,4 +43,25 @@ __device__ Individual evaluation(Individual a, Individual b)
 	{
 		return b;
 	}
+}
+
+int main()
+{
+    Individual pop[NUM_ISLANDS * POP_PER_ISLAND];
+    Individual *d_pop;
+    cudaMalloc((void**) &d_pop,
+	       sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND));
+    cudaMemcpy(d_pop, pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
+	cudaMemcpyHostToDevice);
+
+    Individual boat[NUM_ISLANDS];
+    Individual *d_boat;
+    cudaMalloc((void**) &d_boat, sizeof(Individual) * NUM_ISLANDS);
+    cudaMemcpy(d_boat, boat, sizeof(Individual) * NUM_ISLANDS);
+
+    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
+
+    cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
+	cudaMemcpyDeviceToHost);
+
 }
