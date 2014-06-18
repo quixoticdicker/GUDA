@@ -21,8 +21,8 @@ __global__ void evolve(Individual* pop, Individual* boat)
 	{
 		evaluate(oldPop[threadIdx.x]);
 		
-		int a = pharaohRand() * RAND_MAX % POP_PER_ISLAND;
-		int b = pharaohRand() * RAND_MAX % POP_PER_ISLAND;
+		int a = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
+		int b = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
 		newPop[threadIdx.x] = arena(oldPop[a], oldPop[b]);
 		
 		mutate(newPop[threadIdx.x]);
@@ -57,13 +57,4 @@ __device__ float pharaohRand()
 	curand_init(seed, blockIdx.x * blockDim.x, threadIdx.x, &myState);
 	
 	return curand_uniform(curandState_t);
-}
-
-int main void()
-{
-	Individual* pop;
-	Individual* d_pop;
-	
-	
-	<<<NUM_ISLANDS, POP_PER_ISLAND>>> evolve(d_pop, d_boat);
 }
