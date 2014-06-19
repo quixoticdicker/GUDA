@@ -120,19 +120,16 @@ __global__ void evolve(Individual* pop, Individual* boat)
     pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
 }
 
-float avg_value(Individual* pop, int n)
+long avg_value(Individual* pop, int n)
 {
-    float sum = 0.0f;
-    for (int i = 0; i < n; i++)
-	sum += pop[i].value;
-    return sum / n;
+    return pop[0].value;
 }
 
 float avg_fitness(Individual* pop, int n)
 {
     float sum = 0.0f;
     for (int i = 0; i < n; i++)
-	sum += pop[i].fitness;
+	sum += pop[i].getFitness();
     return sum / n;
 }
 
@@ -152,7 +149,7 @@ int main()
 	       cudaMemcpyHostToDevice);
 
     printf("Average fitness BEFORE: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    printf("Average value BEFORE: %ld\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 
     evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
 
@@ -160,5 +157,5 @@ int main()
 	       cudaMemcpyDeviceToHost);
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    printf("Average value AFTER: %ld\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 }
