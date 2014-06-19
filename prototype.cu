@@ -31,7 +31,17 @@ __device__ void Individual::mutate()
 
 __device__ void Individual::evaluate()
 {
-    fitness = -fabs(2.0f - value * value);
+    float tempFitness = 0;
+	int i;
+	long tempVal = value;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(tempVal & 1 == 1)
+		{
+			tempFitness++;
+		}
+		tempVal >> 1;
+	}
 }
 
 __device__ Individual arena(Individual a, Individual b)
