@@ -12,6 +12,7 @@
 struct Individual {
     long value;
     float fitness;
+	bool fitFlag;
 
     Individual();
     void mutate();
@@ -21,7 +22,6 @@ struct Individual {
 __device__ Individual::Individual() {
     // replace with something random
     value = 0;
-    fitness = -RAND_MAX;
 	int i;
 	for(i = 0; i < sizeof(long) * 8; i++)
 	{
@@ -31,6 +31,7 @@ __device__ Individual::Individual() {
 		}
 		value << 1;
 	}
+	evaluate();
 }
 
 __device__ void Individual::mutate()
@@ -47,6 +48,7 @@ __device__ void Individual::mutate()
 		mutagen << 1;
 	}
 	value ^= mutagen;
+	fitFlag = false;
 }
 
 __device__ void Individual::evaluate()
@@ -63,6 +65,7 @@ __device__ void Individual::evaluate()
 		tempVal >> 1;
 	}
 	fitness = tempFitness;
+	fitFlag = true;
 }
 
 __device__ Individual arena(Individual a, Individual b)
