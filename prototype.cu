@@ -30,7 +30,7 @@ __device__ Individual::Individual() {
 		{
 			value++;
 		}
-		value << 1;
+		value <<= 1;
 	}
 	evaluate();
 }
@@ -46,7 +46,7 @@ __device__ void Individual::mutate()
 		{
 			mutagen++;
 		}
-		mutagen << 1;
+		mutagen <<= 1;
 	}
 	value ^= mutagen;
 	fitFlag = false;
@@ -63,7 +63,7 @@ __device__ void Individual::evaluate()
 		{
 			tempFitness++;
 		}
-		tempVal >> 1;
+		tempVal >>= 1;
 	}
 	fitness = tempFitness;
 	fitFlag = true;
