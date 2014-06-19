@@ -7,6 +7,7 @@
 
 #define POP_PER_ISLAND 256
 #define NUM_ISLANDS 7
+#define RATE 0.03
 
 struct Individual {
     long value;
@@ -26,7 +27,17 @@ __device__ Individual::Individual() {
 __device__ void Individual::mutate()
 {
     // replace with something random
-    value *= 1 + (pharaohRand() - 0.5f) / 5.0f;
+	long mutagen = 0;
+	int i;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(pharaohRand() < RATE)
+		{
+			mutagen++;
+		}
+		mutagen << 1;
+	}
+	value ^= mutagen;
 }
 
 __device__ void Individual::evaluate()
