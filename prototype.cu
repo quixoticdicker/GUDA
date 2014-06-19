@@ -9,7 +9,7 @@
 #define NUM_ISLANDS 7
 
 struct Individual {
-    float value;
+    long value;
     float fitness;
 
     Individual();
@@ -38,11 +38,11 @@ __device__ Individual arena(Individual a, Individual b)
 {
     if (a.fitness > b.fitness)
     {
-	return a;
+		return a;
     }
     else
     {
-	return b;
+		return b;
     }
 }
 
