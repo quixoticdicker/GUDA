@@ -20,8 +20,17 @@ struct Individual {
 
 __device__ Individual::Individual() {
     // replace with something random
-    value = pharaohRand() * 2;
+    value = 0;
     fitness = -RAND_MAX;
+	int i;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(pharaohRand() > 0.5)
+		{
+			value++;
+		}
+		value << 1;
+	}
 }
 
 __device__ void Individual::mutate()
