@@ -62,6 +62,7 @@ __device__ void Individual::evaluate()
 		}
 		tempVal >> 1;
 	}
+	fitness = tempFitness;
 }
 
 __device__ Individual arena(Individual a, Individual b)
