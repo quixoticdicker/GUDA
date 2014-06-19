@@ -17,6 +17,7 @@ struct Individual {
     Individual();
     void mutate();
     void evaluate();
+	float getFitness();
 };
 
 __device__ Individual::Individual() {
@@ -68,9 +69,16 @@ __device__ void Individual::evaluate()
 	fitFlag = true;
 }
 
+__device__ float Individual::getFitness()
+{
+	if(!fitFlag) evaluate();
+	
+	return fitness;	
+}
+
 __device__ Individual arena(Individual a, Individual b)
 {
-    if (a.fitness > b.fitness)
+    if (a.getFitness() > b.getFitness())
     {
 		return a;
     }
