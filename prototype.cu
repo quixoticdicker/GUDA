@@ -7,9 +7,10 @@
 
 #define POP_PER_ISLAND 256
 #define NUM_ISLANDS 7
+#define RATE 0.03
 
 struct Individual {
-    float value;
+    long value;
     float fitness;
 
     Individual();
@@ -19,30 +20,60 @@ struct Individual {
 
 __device__ Individual::Individual() {
     // replace with something random
-    value = pharaohRand() * 2;
+    value = 0;
     fitness = -RAND_MAX;
+	int i;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(pharaohRand() > 0.5)
+		{
+			value++;
+		}
+		value << 1;
+	}
 }
 
 __device__ void Individual::mutate()
 {
     // replace with something random
-    value *= 1 + (pharaohRand() - 0.5f) / 5.0f;
+	long mutagen = 0;
+	int i;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(pharaohRand() < RATE)
+		{
+			mutagen++;
+		}
+		mutagen << 1;
+	}
+	value ^= mutagen;
 }
 
 __device__ void Individual::evaluate()
 {
-    fitness = -fabs(2.0f - value * value);
+    float tempFitness = 0;
+	int i;
+	long tempVal = value;
+	for(i = 0; i < sizeof(long) * 8; i++)
+	{
+		if(tempVal & 1 == 1)
+		{
+			tempFitness++;
+		}
+		tempVal >> 1;
+	}
+	fitness = tempFitness;
 }
 
 __device__ Individual arena(Individual a, Individual b)
 {
     if (a.fitness > b.fitness)
     {
-	return a;
+		return a;
     }
     else
     {
-	return b;
+		return b;
     }
 }
 
@@ -55,7 +86,7 @@ __global__ void evolve(Individual* pop, Individual* boat)
     oldPop[threadIdx.x] = pop[threadIdx.x + blockIdx.x * blockDim.x];
     boat[blockIdx.x] = oldPop[0];
 	
-    for (g = 0; g < 100; g++)
+    for (g = 0; g < 200; g++)
     {
 	oldPop[threadIdx.x].evaluate();
 		
