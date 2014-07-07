@@ -51,9 +51,9 @@ __device__ void Individual::mutate()
 		{
 			thetaMutagen++;
 		}
-		xMutagen << 1;
-		yMutagen << 1;
-		thetaMutagen << 1;
+		xMutagen <<= 1;
+		yMutagen <<= 1;
+		thetaMutagen <<= 1;
 	}
 	i = * (short *) &x; // evil floating point bit level hacking
 	i ^= xMutagen;
@@ -154,6 +154,19 @@ float avg_fitness(Individual* pop, int n)
     return sum / n;
 }
 
+float max_fitness(Individual* pop, int n)
+{
+	float max = pop[0].fitness;
+	for (int i = 1; i < n; i++)
+	{
+		if(pop[i].fitness > max)
+		{
+			max = pop[i].fitness;
+		}
+	}
+	return max;
+}
+
 int main()
 {
     Individual pop[NUM_ISLANDS * POP_PER_ISLAND];
@@ -179,4 +192,5 @@ int main()
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
     printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+	printf("Most asteroids destroyed: %f\n", max_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND)); 
 }
