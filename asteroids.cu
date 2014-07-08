@@ -90,7 +90,7 @@ __device__ void Individual::evaluate()
 {
 	float m, b, mp, bp, xa, ya, xs, ys, d, xd, yd;
 	int i;
-	fitness = 0;
+	fitness = 0.0f;
 	m = sinf(theta) / cosf(theta);
 	b = y - m * x;
 	mp = -1.0f / m;
