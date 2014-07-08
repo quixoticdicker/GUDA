@@ -5,69 +5,69 @@
 #include <curand_kernel.h>
 #include "pharaohrand.h"
 
-#define POP_PER_ISLAND 256
+#define POP_PER_ISLAND 32
 #define NUM_ISLANDS 7
-#define RATE 0.03
+#define RATE 0.015
+#define GENERATIONS 200
+
+#define STRING_LEN 10
 
 struct Individual {
-    long value;
-    float fitness;
+    bool* value;
+    int fitness;
 
-    Individual();
-    void mutate();
-    void evaluate();
+    __device__ void init();
+    __device__ void mutate();
+    __device__ void evaluate();
+    __host__ __device__ int getFitness();
+    __device__ void destroy();
 };
 
-__device__ Individual::Individual() {
-    // replace with something random
-    value = 0;
-    fitness = -RAND_MAX;
-	int i;
-	for(i = 0; i < sizeof(long) * 8; i++)
-	{
-		if(pharaohRand() > 0.5)
-		{
-			value++;
-		}
-		value << 1;
-	}
+__device__ void Individual::init() {
+    value = (bool*) malloc(STRING_LEN * sizeof(bool));
+    for(int i = 0; i < STRING_LEN; i++)
+    {
+	value[i] = pharaohRand() > 0.5;
+    }
+    evaluate();
+}
+
+__device__ void Individual::destroy()
+{
+    free(value);
 }
 
 __device__ void Individual::mutate()
 {
-    // replace with something random
-	long mutagen = 0;
-	int i;
-	for(i = 0; i < sizeof(long) * 8; i++)
+    for(int i = 0; i < STRING_LEN; i++)
+    {
+	if(pharaohRand() < RATE)
 	{
-		if(pharaohRand() < RATE)
-		{
-			mutagen++;
-		}
-		mutagen << 1;
+	    value[i] = !value[i];
 	}
-	value ^= mutagen;
+    }
+    evaluate();
 }
 
 __device__ void Individual::evaluate()
 {
-    float tempFitness = 0;
-	int i;
-	long tempVal = value;
-	for(i = 0; i < sizeof(long) * 8; i++)
-	{
-		if(tempVal & 1 == 1)
-		{
-			tempFitness++;
-		}
-		tempVal >> 1;
-	}
-	fitness = tempFitness;
+    fitness = 0;
+    for (int i = 0; i < STRING_LEN; i++)
+    {
+	if (value[i])
+	    fitness++;
+
+    }
+}
+
+__host__ __device__ int Individual::getFitness()
+{
+    return fitness;
 }
 
 __device__ Individual arena(Individual a, Individual b)
 {
-    if (a.fitness > b.fitness)
+    if (a.getFitness() > b.getFitness())
     {
 		return a;
     }
@@ -81,21 +81,23 @@ __global__ void evolve(Individual* pop, Individual* boat)
 {
     __shared__ Individual oldPop[POP_PER_ISLAND];
     __shared__ Individual newPop[POP_PER_ISLAND];
-    int g;
-	
-    oldPop[threadIdx.x] = pop[threadIdx.x + blockIdx.x * blockDim.x];
+
+    oldPop[threadIdx.x].init();
+
+    __syncthreads();
+
     boat[blockIdx.x] = oldPop[0];
-	
-    for (g = 0; g < 200; g++)
+
+    for (int g = 0; g < GENERATIONS; g++)
     {
-	oldPop[threadIdx.x].evaluate();
-		
 	int a = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
 	int b = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
 	newPop[threadIdx.x] = arena(oldPop[a], oldPop[b]);
 		
 	newPop[threadIdx.x].mutate();
 	//crossover(newPop[threadIdx.x]);
+
+	__syncthreads();
 
 	boat[(blockIdx.x + 1) % NUM_ISLANDS] = newPop[0];
 	__syncthreads();
@@ -104,22 +106,50 @@ __global__ void evolve(Individual* pop, Individual* boat)
 	__syncthreads();
 		
 	oldPop[threadIdx.x] = newPop[threadIdx.x];
+	__syncthreads();
     }
 
-    pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
+    pop[threadIdx.x + blockIdx.x * blockDim.x] = oldPop[threadIdx.x];
+
+    oldPop[threadIdx.x].destroy();
+    newPop[threadIdx.x].destroy();
 }
 
-float avg_value(Individual* pop, int n)
+/*
+char* best_value(Individual* pop, int n)
 {
-    float sum = 0.0f;
+    int best_i = 0;
+    float best_fit = 0.0f;
+
     for (int i = 0; i < n; i++)
-	sum += pop[i].value;
-    return sum / n;
+    {
+	if (pop[i].getFitness() > best_fit)
+	{
+	    best_fit = pop[i].getFitness();
+	    best_i = i;
+	}
+    }
+
+    return pop[best_i].value;
+}
+*/
+
+int best_fitness(Individual* pop, int n)
+{
+    int best = 0;
+    for (int i = 0; i < n; i++)
+    {
+	printf("%d ", pop[i].getFitness());
+	if (pop[i].getFitness() > best)
+	    best = pop[i].getFitness();
+    }
+    printf("\n");
+    return best;
 }
 
 float avg_fitness(Individual* pop, int n)
 {
-    float sum = 0.0f;
+    long int sum = 0;
     for (int i = 0; i < n; i++)
 	sum += pop[i].fitness;
     return sum / n;
@@ -127,27 +157,18 @@ float avg_fitness(Individual* pop, int n)
 
 int main()
 {
-    Individual pop[NUM_ISLANDS * POP_PER_ISLAND];
     Individual *d_pop;
-    cudaMalloc((void**) &d_pop,
-	       sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND));
-    cudaMemcpy(d_pop, pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
-	       cudaMemcpyHostToDevice);
-
-    Individual boat[NUM_ISLANDS];
+    cudaMalloc((void**)&d_pop, sizeof(Individual)*NUM_ISLANDS*POP_PER_ISLAND);
     Individual *d_boat;
-    cudaMalloc((void**) &d_boat, sizeof(Individual) * NUM_ISLANDS);
-    cudaMemcpy(d_boat, boat, sizeof(Individual) * NUM_ISLANDS,
-	       cudaMemcpyHostToDevice);
-
-    printf("Average fitness BEFORE: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    cudaMalloc((void**)&d_boat, sizeof(Individual)*NUM_ISLANDS);
 
     evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
 
+    Individual *pop = (Individual *)malloc(sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND));
     cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
 	       cudaMemcpyDeviceToHost);
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    printf("Best fitness AFTER: %d\n", best_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    //printf("Best value AFTER: %lu\n", best_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 }
