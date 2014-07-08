@@ -9,6 +9,7 @@
 #define NUM_ISLANDS 7
 #define RATE 0.03
 #define GENERATIONS 100
+#define SELECT_MUTATION 1
 
 #define NUM_ROIDS 3
 
@@ -38,6 +39,9 @@ __device__ void Individual::init() {
 
 __device__ void Individual::mutate()
 {
+#ifdef SELECT_MUTATION
+	Individual oldI = *this;
+#endif	
 	// xMutagen, yMutagen, mMutagen
 	int xMutagen = 0;
 	int yMutagen = 0;
@@ -74,6 +78,12 @@ __device__ void Individual::mutate()
 	theta = * (float *) &i;
 	
 	evaluate();
+#ifdef SELECT_MUTATION
+	if(oldI.getFitness() > getFitness())
+	{
+		*this = oldI;
+	}
+#endif
 }
 
 __device__ void Individual::evaluate()
