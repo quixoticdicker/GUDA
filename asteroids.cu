@@ -14,7 +14,7 @@
 
 __constant__ float roids_x[] = {0.00f, 3.00f, 3.00f};
 __constant__ float roids_y[] = {0.00f, 0.00f, 3.00f};
-__constant__ float roids_r[] = {1.00f, 1.00f, 1.00f};
+__constant__ float roids_r[] = {10.00f, 10.00f, 10.00f};
 
 struct Individual {
     float theta;
