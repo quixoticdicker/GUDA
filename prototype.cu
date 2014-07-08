@@ -40,7 +40,7 @@ __device__ void Individual::destroy()
 __device__ void Individual::mutate()
 {
 #ifdef SELECT_MUTATION
-	Individual oldI = this;
+	Individual oldI = *this;
 #endif	
     for(int i = 0; i < STRING_LEN; i++)
     {
@@ -51,9 +51,9 @@ __device__ void Individual::mutate()
     }
     evaluate();
 #ifdef SELECT_MUTATION
-	if(oldI.getFitness() > this.getFitness())
+	if(oldI.getFitness() > getFitness())
 	{
-		this = oldI;
+		*this = oldI;
 	}
 #endif
 }
