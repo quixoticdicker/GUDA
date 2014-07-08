@@ -29,8 +29,8 @@ struct Individual {
 };
 
 __device__ Individual::init() {	
-	x = pharaohRand() * 2000000.0f - 1000000.0f;
-	y = pharaohRand() * 2000000.0f - 1000000.0f;
+	x = pharaohRand() * 200.0f - 100.0f;
+	y = pharaohRand() * 200.0f - 100.0f;
 	theta = pharaohRand() * 2 * M_PI;
 	
 	evaluate();
