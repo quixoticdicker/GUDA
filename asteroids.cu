@@ -25,7 +25,7 @@ struct Individual {
     __device__ void mutate();
     __device__ void evaluate();
 	__host__ __device__ int getFitness();
-	__device__ void destroy();
+	__device__ void destroy() {};
 };
 
 __device__ void Individual::init() {	
