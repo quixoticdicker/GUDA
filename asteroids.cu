@@ -39,11 +39,11 @@ __device__ void Individual::init() {
 __device__ void Individual::mutate()
 {
 	// xMutagen, yMutagen, mMutagen
-	short xMutagen = 0;
-	short yMutagen = 0;
-	short thetaMutagen = 0;
-	short i;
-	for(i = 0; i < sizeof(long) * 8; i++)
+	int xMutagen = 0;
+	int yMutagen = 0;
+	int thetaMutagen = 0;
+	int i;
+	for(i = 0; i < sizeof(float) * 8; i++)
 	{
 		if(pharaohRand() < RATE)
 		{
@@ -61,15 +61,15 @@ __device__ void Individual::mutate()
 		yMutagen <<= 1;
 		thetaMutagen <<= 1;
 	}
-	i = * (short *) &x; // evil floating point bit level hacking
+	i = * (int *) &x; // evil floating point bit level hacking
 	i ^= xMutagen;
 	x = * (float *) &i;
 	
-	i = * (short *) &y;
+	i = * (int *) &y;
 	i ^= yMutagen;
 	y = * (float *) &i;
 	
-	i = * (short *) &theta;
+	i = * (int *) &theta;
 	i ^= thetaMutagen;
 	theta = * (float *) &i;
 	
