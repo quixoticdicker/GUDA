@@ -12,9 +12,9 @@
 
 #define NUM_ROIDS 3
 
-__const__ float roids_x[] = {0.00f, 3.00f, 3.00f};
-__const__ float roids_y[] = {0.00f, 0.00f, 3.00f};
-__const__ float roids_r[] = {1.00f, 1.00f, 1.00f};
+__constant__ float roids_x[] = {0.00f, 3.00f, 3.00f};
+__constant__ float roids_y[] = {0.00f, 0.00f, 3.00f};
+__constant__ float roids_r[] = {1.00f, 1.00f, 1.00f};
 
 struct Individual {
     float theta;
@@ -87,8 +87,8 @@ __device__ void Individual::evaluate()
 	
 	for(i = 0; i < NUM_ROIDS; i++)
 	{
-		xa = roid_x[i];
-		ya = roid_y[i];
+		xa = roids_x[i];
+		ya = roids_y[i];
 		bp = ya - mp * xa;
 		
 		xs = (bp - b)/(m - mp);
@@ -98,7 +98,7 @@ __device__ void Individual::evaluate()
 		yd = yp - ys;
 		d = sqrtf(xd * xd + yd * dy);
 		
-		if(d < roid_r[i]) fitness++;
+		if(d < roids_r[i]) fitness++;
 	}
 }
 
