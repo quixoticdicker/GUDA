@@ -204,7 +204,7 @@ int main()
 	       cudaMemcpyHostToDevice);
 
     printf("Average fitness BEFORE: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    //printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 
     evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
 
