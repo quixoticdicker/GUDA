@@ -28,7 +28,7 @@ struct Individual {
 	__device__ void destroy();
 };
 
-__device__ Individual::init() {	
+__device__ void Individual::init() {	
 	x = pharaohRand() * 200.0f - 100.0f;
 	y = pharaohRand() * 200.0f - 100.0f;
 	theta = pharaohRand() * 2 * M_PI;
@@ -69,16 +69,16 @@ __device__ void Individual::mutate()
 	i ^= yMutagen;
 	y = * (float *) &i;
 	
-	i = * (short *) &alpha;
+	i = * (short *) &theta;
 	i ^= thetaMutagen;
-	alpha = * (float *) &i;
+	theta = * (float *) &i;
 	
 	evaluate();
 }
 
 __device__ void Individual::evaluate()
 {
-	float m, b, mp, bp, xa, ya, xs, ys, d;
+	float m, b, mp, bp, xa, ya, xs, ys, d, xd, yd;
 	int i;
 	fitness = 0;
 	m = sinf(theta) / cosf(theta);
@@ -94,9 +94,9 @@ __device__ void Individual::evaluate()
 		xs = (bp - b)/(m - mp);
 		ys = m * xs + b;
 		
-		xd = xp - xs;
-		yd = yp - ys;
-		d = sqrtf(xd * xd + yd * dy);
+		xd = xa - xs;
+		yd = ya - ys;
+		d = sqrtf(xd * xd + yd * yd);
 		
 		if(d < roids_r[i]) fitness++;
 	}
@@ -158,14 +158,14 @@ __global__ void evolve(Individual* pop, Individual* boat)
 	oldPop[threadIdx.x].destroy();
 	newPop[threadIdx.x].destroy();
 }
-
+/*
 float avg_value(Individual* pop, int n)
 {
     float sum = 0.0f;
     for (int i = 0; i < n; i++)
 	sum += pop[i].value;
     return sum / n;
-}
+}*/
 
 float avg_fitness(Individual* pop, int n)
 {
@@ -212,6 +212,6 @@ int main()
 	       cudaMemcpyDeviceToHost);
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
-    printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
+    //printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 	printf("Most asteroids destroyed: %f\n", best_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND)); 
 }
