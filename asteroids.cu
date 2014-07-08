@@ -24,7 +24,7 @@ struct Individual {
 	__device__ void init();
     __device__ void mutate();
     __device__ void evaluate();
-	__host__ __device__ int getFitness();
+	__host__ __device__ float getFitness();
 	__device__ void destroy() {};
 };
 
@@ -102,7 +102,7 @@ __device__ void Individual::evaluate()
 	}
 }
 
-__host__ __device__ int Individual::getFitness()
+__host__ __device__ float Individual::getFitness()
 {
 	return fitness;
 }
