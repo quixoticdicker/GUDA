@@ -108,7 +108,7 @@ __device__ void Individual::evaluate()
 		yd = ya - ys;
 		d = sqrtf(xd * xd + yd * yd);
 		
-		if(d < roids_r[i]) fitness++;
+		if(true) fitness++; //d < roids_r[i]) fitness++;
 	}
 }
 
