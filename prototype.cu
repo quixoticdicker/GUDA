@@ -5,15 +5,15 @@
 #include <curand_kernel.h>
 #include "pharaohrand.h"
 
-#define POP_PER_ISLAND 32
-#define NUM_ISLANDS 7
-#define RATE 0.015
-#define GENERATIONS 200
+#define POP_PER_ISLAND 16
+#define NUM_ISLANDS 3
+#define RATE 0.10
+#define GENERATIONS 10
 
-#define STRING_LEN 10
+#define STRING_LEN 1000
 
 struct Individual {
-    bool* value;
+    bool value[STRING_LEN];
     int fitness;
 
     __device__ void init();
@@ -24,7 +24,7 @@ struct Individual {
 };
 
 __device__ void Individual::init() {
-    value = (bool*) malloc(STRING_LEN * sizeof(bool));
+    //value = (bool*) malloc(STRING_LEN * sizeof(bool));
     for(int i = 0; i < STRING_LEN; i++)
     {
 	value[i] = pharaohRand() > 0.5;
@@ -34,7 +34,7 @@ __device__ void Individual::init() {
 
 __device__ void Individual::destroy()
 {
-    free(value);
+    //free(value);
 }
 
 __device__ void Individual::mutate()
