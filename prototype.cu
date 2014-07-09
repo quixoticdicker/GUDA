@@ -7,15 +7,14 @@
 
 #define POP_PER_ISLAND 32
 #define NUM_ISLANDS 7
-#define RATE 0.015
-#define GENERATIONS 200
-
-#define STRING_LEN 10
+#define RATE 0.01
+#define GENERATIONS 100
+#define SELECT_MUTATION 1
+#define STRING_LEN 100
 
 struct Individual {
-    bool* value;
+    bool value[STRING_LEN];
     int fitness;
-
     __device__ void init();
     __device__ void mutate();
     __device__ void evaluate();
@@ -24,7 +23,7 @@ struct Individual {
 };
 
 __device__ void Individual::init() {
-    value = (bool*) malloc(STRING_LEN * sizeof(bool));
+    //value = (bool*) malloc(STRING_LEN * sizeof(bool));
     for(int i = 0; i < STRING_LEN; i++)
     {
 	value[i] = pharaohRand() > 0.5;
@@ -34,11 +33,14 @@ __device__ void Individual::init() {
 
 __device__ void Individual::destroy()
 {
-    free(value);
+    //free(value);
 }
 
 __device__ void Individual::mutate()
 {
+#ifdef SELECT_MUTATION
+    Individual oldI = *this;
+#endif	
     for(int i = 0; i < STRING_LEN; i++)
     {
 	if(pharaohRand() < RATE)
@@ -47,6 +49,12 @@ __device__ void Individual::mutate()
 	}
     }
     evaluate();
+#ifdef SELECT_MUTATION
+    if(oldI.getFitness() > getFitness())
+    {
+	*this = oldI;
+    }
+#endif
 }
 
 __device__ void Individual::evaluate()
