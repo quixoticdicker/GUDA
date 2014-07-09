@@ -8,48 +8,33 @@
 #define POP_PER_ISLAND 256
 #define NUM_ISLANDS 7
 #define RATE 0.03
-<<<<<<< HEAD
-#define NUM_ROIDS 3
-
-__const__ float roids_x[] = {0.00f, 3.00f, 3.00f};
-__const__ float roids_y[] = {0.00f, 0.00f, 3.00f};
-__const__ float roids_r[] = {1.00f, 1.00f, 1.00f};
-
-struct Individual {
-    float theta;
-	float x, y;
-    float fitness;
-
-    Individual();
-    void mutate();
-    void evaluate();
-};
-
-__device__ Individual::Individual() {	
-	x = pharaohRand() * 2000000.0f - 1000000.0f;
-	y = pharaohRand() * 2000000.0f - 1000000.0f;
-	theta = pharaohRand() * 2 * M_PI;
-=======
 #define GENERATIONS 100
 #define SELECT_MUTATION 1
 
-#define NUM_ROIDS 3
+#define NUM_ROIDS 5
 
-__constant__ float roids_x[] = {0.00f, 3.00f, 3.00f};
-__constant__ float roids_y[] = {0.00f, 0.00f, 3.00f};
-__constant__ float roids_r[] = {1.00f, 1.00f, 1.00f};
+__constant__ float roids_x[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
+__constant__ float roids_y[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
+__constant__ float roids_r[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 
 struct Individual {
     float theta;
     float x, y;
+
     float fitness;
 
     __device__ void init();
     __device__ void mutate();
     __device__ void evaluate();
     __host__ __device__ float getFitness();
+    __host__ __device__ void print();
     __device__ void destroy() {};
 };
+
+__host__ __device__ void Individual::print()
+{
+    printf("x = %f, y = %f, theta = %f\n", x, y, theta);
+}
 
 __device__ void Individual::init() {	
     x = pharaohRand() * 200.0f - 100.0f;
@@ -57,7 +42,6 @@ __device__ void Individual::init() {
     theta = pharaohRand() * 2 * M_PI;
     
     evaluate();
->>>>>>> d3e24202770292679f1b8bf513388ea770985148
 }
 
 __device__ void Individual::mutate()
@@ -243,6 +227,8 @@ int main()
 
     cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
 	       cudaMemcpyDeviceToHost);
+
+    pop[0].print();
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
     //printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
