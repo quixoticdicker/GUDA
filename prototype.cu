@@ -5,12 +5,12 @@
 #include <curand_kernel.h>
 #include "pharaohrand.h"
 
-#define POP_PER_ISLAND 16
-#define NUM_ISLANDS 3
-#define RATE 0.10
-#define GENERATIONS 10
-
-#define STRING_LEN 1000
+#define POP_PER_ISLAND 32
+#define NUM_ISLANDS 7
+#define RATE 0.01
+#define GENERATIONS 100
+#define SELECT_MUTATION 1
+#define STRING_LEN 100
 
 struct Individual {
     bool value[STRING_LEN];

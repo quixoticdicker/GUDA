@@ -15,7 +15,7 @@
 
 __constant__ float roids_x[] = {0.00f, 3.00f, 3.00f};
 __constant__ float roids_y[] = {0.00f, 0.00f, 3.00f};
-__constant__ float roids_r[] = {200.00f, 200.00f, 200.00f};
+__constant__ float roids_r[] = {1.00f, 1.00f, 1.00f};
 
 struct Individual {
     float theta;
@@ -108,7 +108,7 @@ __device__ void Individual::evaluate()
 		yd = ya - ys;
 		d = sqrtf(xd * xd + yd * yd);
 		
-		if(true) fitness++; //d < roids_r[i]) fitness++;
+		if(d < roids_r[i]) fitness++;
 	}
 }
 
@@ -136,6 +136,8 @@ __global__ void evolve(Individual* pop, Individual* boat)
 	
     oldPop[threadIdx.x].init();
 	
+	//	printf("Fitness is %f\n", oldPop[threadIdx.x].getFitness());
+
 	__syncthreads();
 	
     boat[blockIdx.x] = oldPop[0];
