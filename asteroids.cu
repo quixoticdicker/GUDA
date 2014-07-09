@@ -19,137 +19,135 @@ __constant__ float roids_r[] = {1.00f, 1.00f, 1.00f};
 
 struct Individual {
     float theta;
-	float x, y;
+    float x, y;
     float fitness;
 
-	__device__ void init();
+    __device__ void init();
     __device__ void mutate();
     __device__ void evaluate();
-	__host__ __device__ float getFitness();
-	__device__ void destroy() {};
+    __host__ __device__ float getFitness();
+    __device__ void destroy() {};
 };
 
 __device__ void Individual::init() {	
-	x = pharaohRand() * 200.0f - 100.0f;
-	y = pharaohRand() * 200.0f - 100.0f;
-	theta = pharaohRand() * 2 * M_PI;
-	
-	evaluate();
+    x = pharaohRand() * 200.0f - 100.0f;
+    y = pharaohRand() * 200.0f - 100.0f;
+    theta = pharaohRand() * 2 * M_PI;
+    
+    evaluate();
 }
 
 __device__ void Individual::mutate()
 {
 #ifdef SELECT_MUTATION
-	Individual oldI = *this;
+    Individual oldI = *this;
 #endif	
-	// xMutagen, yMutagen, mMutagen
-	int xMutagen = 0;
-	int yMutagen = 0;
-	int thetaMutagen = 0;
-	int i;
-	for(i = 0; i < sizeof(float) * 8; i++)
+    // xMutagen, yMutagen, mMutagen
+    int xMutagen = 0;
+    int yMutagen = 0;
+    int thetaMutagen = 0;
+    int i;
+    for(i = 0; i < sizeof(float) * 8; i++)
+    {
+	if(pharaohRand() < RATE)
 	{
-		if(pharaohRand() < RATE)
-		{
-			xMutagen++;
-		}
-		if(pharaohRand() < RATE)
-		{
-			yMutagen++;
-		}
-		if(pharaohRand() < RATE)
-		{
-			thetaMutagen++;
-		}
-		xMutagen <<= 1;
-		yMutagen <<= 1;
-		thetaMutagen <<= 1;
+	    xMutagen++;
 	}
-	i = * (int *) &x; // evil floating point bit level hacking
-	i ^= xMutagen;
-	x = * (float *) &i;
-	
-	i = * (int *) &y;
-	i ^= yMutagen;
-	y = * (float *) &i;
-	
-	i = * (int *) &theta;
-	i ^= thetaMutagen;
-	theta = * (float *) &i;
-	
-	evaluate();
+	if(pharaohRand() < RATE)
+	{
+	    yMutagen++;
+	}
+	if(pharaohRand() < RATE)
+	{
+	    thetaMutagen++;
+	}
+	xMutagen <<= 1;
+	yMutagen <<= 1;
+	thetaMutagen <<= 1;
+    }
+    i = * (int *) &x; // evil floating point bit level hacking
+    i ^= xMutagen;
+    x = * (float *) &i;
+    
+    i = * (int *) &y;
+    i ^= yMutagen;
+    y = * (float *) &i;
+    
+    i = * (int *) &theta;
+    i ^= thetaMutagen;
+    theta = * (float *) &i;
+    
+    evaluate();
 #ifdef SELECT_MUTATION
-	if(oldI.getFitness() > getFitness())
-	{
-		*this = oldI;
-	}
+    if(oldI.getFitness() > getFitness())
+    {
+	*this = oldI;
+    }
 #endif
 }
 
 __device__ void Individual::evaluate()
 {
-	float m, b, mp, bp, xa, ya, xs, ys, d, xd, yd;
-	int i;
-	fitness = 0.0f;
-	m = sinf(theta) / cosf(theta);
-	b = y - m * x;
-	mp = -1.0f / m;
+    float m, b, mp, bp, xa, ya, xs, ys, d, xd, yd;
+    int i;
+    fitness = 0.0f;
+    m = sinf(theta) / cosf(theta);
+    b = y - m * x;
+    mp = -1.0f / m;
+    
+    for(i = 0; i < NUM_ROIDS; i++)
+    {
+	xa = roids_x[i];
+	ya = roids_y[i];
+	bp = ya - mp * xa;
 	
-	for(i = 0; i < NUM_ROIDS; i++)
-	{
-		xa = roids_x[i];
-		ya = roids_y[i];
-		bp = ya - mp * xa;
-		
-		xs = (bp - b)/(m - mp);
-		ys = m * xs + b;
-		
-		xd = xa - xs;
-		yd = ya - ys;
-		d = sqrtf(xd * xd + yd * yd);
-		
-		if(d < roids_r[i]) fitness++;
-	}
+	xs = (bp - b)/(m - mp);
+	ys = m * xs + b;
+	
+	xd = xa - xs;
+	yd = ya - ys;
+	d = sqrtf(xd * xd + yd * yd);
+	
+	if(d < roids_r[i]) fitness++;
+    }
 }
 
 __host__ __device__ float Individual::getFitness()
 {
-	return fitness;
+    return fitness;
 }
 
 __device__ Individual arena(Individual a, Individual b)
 {
     if (a.fitness > b.fitness)
     {
-		return a;
+	return a;
     }
     else
     {
-		return b;
+	return b;
     }
 }
 
-__global__ void evolve(Individual* pop, Individual* boat)
+__global__ void evolve(Individual* pop, Individual* boat, int generations)
 {
     __shared__ Individual oldPop[POP_PER_ISLAND];
     __shared__ Individual newPop[POP_PER_ISLAND];
 	
     oldPop[threadIdx.x].init();
 	
-	//	printf("Fitness is %f\n", oldPop[threadIdx.x].getFitness());
+    //	printf("Fitness is %f\n", oldPop[threadIdx.x].getFitness());
 
-	__syncthreads();
+    __syncthreads();
 	
     boat[blockIdx.x] = oldPop[0];
 	
-    for (int g = 0; g < GENERATIONS; g++)
+    for (int g = 0; g < generations; g++)
     {
-	//oldPop[threadIdx.x].evaluate();
-		
 	int a = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
 	int b = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
 	newPop[threadIdx.x] = arena(oldPop[a], oldPop[b]);
-		
+	
 	newPop[threadIdx.x].mutate();
 	//crossover(newPop[threadIdx.x]);
 
@@ -167,8 +165,8 @@ __global__ void evolve(Individual* pop, Individual* boat)
 
     pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
 	
-	oldPop[threadIdx.x].destroy();
-	newPop[threadIdx.x].destroy();
+    oldPop[threadIdx.x].destroy();
+    newPop[threadIdx.x].destroy();
 }
 /*
 float avg_value(Individual* pop, int n)
@@ -189,15 +187,15 @@ float avg_fitness(Individual* pop, int n)
 
 float best_fitness(Individual* pop, int n)
 {
-	float max = pop[0].fitness;
-	for (int i = 1; i < n; i++)
+    float max = pop[0].fitness;
+    for (int i = 1; i < n; i++)
+    {
+	if(pop[i].fitness > max)
 	{
-		if(pop[i].fitness > max)
-		{
-			max = pop[i].fitness;
-		}
+	    max = pop[i].fitness;
 	}
-	return max;
+    }
+    return max;
 }
 
 int main()
@@ -218,12 +216,12 @@ int main()
     printf("Average fitness BEFORE: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
     //printf("Average value BEFORE: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
 
-    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat);
+    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, GENERATIONS);
 
     cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
 	       cudaMemcpyDeviceToHost);
 
     printf("Average fitness AFTER: %f\n", avg_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND));
     //printf("Average value AFTER: %f\n", avg_value(pop, NUM_ISLANDS * POP_PER_ISLAND));
-	printf("Most asteroids destroyed: %f\n", best_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND)); 
+    printf("Most asteroids destroyed: %f\n", best_fitness(pop, NUM_ISLANDS * POP_PER_ISLAND)); 
 }
