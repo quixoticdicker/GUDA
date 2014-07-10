@@ -25,10 +25,12 @@ __device__ void init()
 }
 ```
 Replace this with something that initializes your variables. For example:
+```C++
 __device__ void init()
 {
 	sqrtTwo = pharaohRand() * 100.0f - 50.0f;
 }
+```
 This generates a random float between -50 and 50 and puts it in sqrtTwo. The first thing you'll notice is this pharaohRand() function. This is a function that we're giving you that generates a random float between 0 and 1. We're scaling up what is returned so we get a number between 0 and 100. Finally, we're subtracting 50 so we get a number from -50 to 50. The next thing you'll notice is that we are writing 100.0f and 50.0f instead of just 100 and 50. This is to ensure that the compiler treats these numbers as floats.
 
 Next
