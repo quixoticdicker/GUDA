@@ -100,7 +100,7 @@ We also have some features that can be used to speed up the process. One of thes
 
 There may also be some times when all of your threads access the same data. For example, look at [this problem](https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=622&page=show_problem&problem=4532) from the 2014 ICPC. We implement a genetic algorithm solution to this problem where the members of the population are possible beams defined by a point and a slope. To evaluate a beam, a thread needs to access the locations and radii of each asteroid. We are able to do this using constant memory. We define constant memory before the include "guda.h". This would look like:
 ```C++
-#define NUM_ASTEROIDS 5
+#define NUM_ROIDS 5
 __constant__ float roids_x[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
 __constant__ float roids_y[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
 __constant__ float roids_r[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
@@ -113,17 +113,17 @@ Here we have defined five asteroids along the line y = x, all with a radius of 1
 ```C++
 for (i = 0; i < NUM_ROIDS; i++)
     {
-	xa = roids_x[i];
-	ya = roids_y[i];
-	bp = ya - mp * xa;
+		xa = roids_x[i];
+		ya = roids_y[i];
+		bp = ya - mp * xa;
 	
-	xs = (bp - b)/(m - mp);
-	ys = m * xs + b;
+		xs = (bp - b)/(m - mp);
+		ys = m * xs + b;
 	
-	xd = xa - xs;
-	yd = ya - ys;
-	d = sqrtf(xd * xd + yd * yd);
+		xd = xa - xs;
+		yd = ya - ys;
+		d = sqrtf(xd * xd + yd * yd);
 	
-	if (d < roids_r[i]) fitness++;
+		if (d < roids_r[i]) fitness++;
     }
 ```
