@@ -10,6 +10,25 @@ CUDA is a language developed by NVIDIA that we're using in conjunction with C++ 
 
 ### Utilization
 Although most of it is already done for you, we are going to ask you to define a few things. The first thing we will ask you to define is the variables that the Individual will have. You should see the following code in template.cu:
-```C
+```C++
 #define MEMBERS
 ```
+After this, write all of the variables that you would like the individual to have. For example, say were using a genetic algorithm to find the square root of two. We would want our individual to store a value corresponding with that individual's guess for the square root of two:
+```C++
+#define MEMBERS float sqrtTwo;
+```
+You'll noticed that I defined a float instead of a double. When using CUDA, **it is often faster to use floats** since NVIDIA graphics cards mostly have cores that can do single precision operations. Next, we need you to define a function to initialize an individual. You will see the following code:
+```C++
+__device__ void init()
+{
+
+}
+```
+Replace this with something that initializes your variables. For example:
+__device__ void init()
+{
+	sqrtTwo = pharaohRand() * 100.0f - 50.0f;
+}
+This generates a random float between -50 and 50 and puts it in sqrtTwo. The first thing you'll notice is this pharaohRand() function. This is a function that we're giving you that generates a random float between 0 and 1. We're scaling up what is returned so we get a number between 0 and 100. Finally, we're subtracting 50 so we get a number from -50 to 50. The next thing you'll notice is that we are writing 100.0f and 50.0f instead of just 100 and 50. This is to ensure that the compiler treats these numbers as floats.
+
+Next
