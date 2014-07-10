@@ -83,6 +83,6 @@ __device__ float evaluate()
 	return -fabsf(sqrtTwo * sqrtTwo - 2);
 }
 ```
-We know that our guess, when multiplied with itself, should be two. We find the magnitude of the difference, and take the negative to ensure that a smaller difference corresponds with a higher fitness. For example, if sqrtTwo actually equals the square root of two, the function would return 0 and if sqrtTwo was 4, the function would return -14 (-|4 * 4 - 2| = -|16 - 2| = - |14| = -14).
+We know that our guess, when multiplied with itself, should be two. We find the magnitude of the difference, and take the negative to ensure that a smaller difference corresponds with a higher fitness. For example, if sqrtTwo actually equals the square root of two, the function would return 0 and if sqrtTwo was 4, the function would return -14 (-|4 * 4 - 2| = -|16 - 2| = - |14| = -14). You'll notice that we're using the fabsf() function with is a function in CUDA's math library. You can find all math functions that are usable in CUDA [here](http://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__SINGLE.html#group__CUDA__MATH__SINGLE).
 
 Now you should be good to go!
