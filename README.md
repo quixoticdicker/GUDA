@@ -8,8 +8,8 @@ To begin, let me give you some background on genetic algorithms and CUDA. If you
 
 CUDA is a language developed by NVIDIA that we're using in conjunction with C++ that allows programmers to utilize their graphics cards for general purpose programming. Graphics cards have hundreds or thousands of cores which is much greater than the 4 - 12 cores that you might find on the nicest CPU's. The cores on a GPU are organized onto streaming multiprocessors (SM's). NVIDIA GPU's mostly have cores that can do single precision operations.
 
-# Utilization
+### Utilization
 Although most of it is already done for you, we are going to ask you to define a few things. The first thing we will ask you to define is the variables that the Individual will have. You should see the following code in template.cu:
-'''C++
+```C
 #define MEMBERS
-'''
+```
