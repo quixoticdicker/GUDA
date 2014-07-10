@@ -49,6 +49,11 @@ __device__ void Individual::mutate()
 #ifdef SELECT_MUTATION
     Individual oldI = *this;
 #endif	
+    x += 10*cleopatra();
+    y += 10*cleopatra();
+    theta += 0.1745 * cleopatra();
+
+    /*
     // xMutagen, yMutagen, mMutagen
     int xMutagen = 0;
     int yMutagen = 0;
@@ -83,7 +88,7 @@ __device__ void Individual::mutate()
     i = * (int *) &theta;
     i ^= thetaMutagen;
     theta = * (float *) &i;
-    
+    */
     evaluate();
 #ifdef SELECT_MUTATION
     if(oldI.getFitness() > getFitness())
@@ -146,7 +151,7 @@ __global__ void evolve(Individual* pop, Individual* boat, int generations)
     //	printf("Fitness is %f\n", oldPop[threadIdx.x].getFitness());
 
     __syncthreads();
-	
+
     boat[blockIdx.x] = oldPop[0];
 	
     for (int g = 0; g < generations; g++)
