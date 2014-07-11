@@ -98,7 +98,7 @@ We also have some features that can be used to speed up the process. One of thes
 #define SELECT_MUTATION
 ```
 
-There may also be some times when all of your threads access the same data. For example, look at [this problem](https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=622&page=show_problem&problem=4532) from the 2014 ICPC. We implement a genetic algorithm solution to this problem where the members of the population are possible beams defined by a point and a slope. To evaluate a beam, a thread needs to access the locations and radii of each asteroid. We are able to do this using constant memory. We define constant memory before the include "guda.h". This would look like:
+There may also be some times when all of your threads access the same data. For example, look at [this problem](https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=622&page=show_problem&problem=4532) from the 2014 ICPC. We implement a genetic algorithm solution to this problem where the members of the population are possible beams defined by a point and a slope. To evaluate a beam, a thread needs to access the locations and radii of all asteroids. We are able to do this using constant memory. We define constant memory before the include "guda.h". This would look like:
 ```C++
 #define NUM_ROIDS 5
 __constant__ float roids_x[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};

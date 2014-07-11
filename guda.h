@@ -80,13 +80,15 @@ __device__ Individual arena(Individual a, Individual b)
     }
 }
 
-__global__ void evolve(Individual* pop, Individual* boat, int generations)
+__global__ void evolve(Individual* pop, Individual* boat, int generations, bool first)
 {
     __shared__ Individual oldPop[POP_PER_ISLAND];
     __shared__ Individual newPop[POP_PER_ISLAND];
 	
-    oldPop[threadIdx.x].master_init();
-	
+	if (first)
+		oldPop[threadIdx.x].master_init();
+	else
+		oldPop[threadIdx.x] = pop[threadIdx.x + blockIdx.x * blockDim.x];
     __syncthreads();
 
     boat[blockIdx.x] = oldPop[0];
@@ -149,13 +151,14 @@ Individual run(int generations, int gens_each = 500)
     gpuErrchk(cudaMemcpy(d_boat, boat, sizeof(Individual) * NUM_ISLANDS,
 			 cudaMemcpyHostToDevice));
 
-    for (int i = 0; i < generations / gens_each; i++)
+	int i = 0;
+    for (i = 0; i < generations / gens_each; i++)
     {
-	evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, gens_each);
-	gpuErrchk(cudaPeekAtLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+		evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, gens_each, i == 0);
+		gpuErrchk(cudaPeekAtLastError());
+		gpuErrchk(cudaDeviceSynchronize());
     }
-    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, generations % gens_each);
+    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, generations % gens_each, i == 0);
     gpuErrchk(cudaPeekAtLastError());
     gpuErrchk(cudaDeviceSynchronize());
 
