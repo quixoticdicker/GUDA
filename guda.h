@@ -5,9 +5,23 @@
 #include <curand_kernel.h>
 #include "pharaohrand.h"
 
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
+{
+    if (code != cudaSuccess) 
+    {
+	fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+	if (abort) exit(code);
+    }
+}
+
+#ifndef NUM_ISLANDS
+#define NUM_ISLANDS 21
+#endif
+
+#ifndef POP_PER_ISLAND
 #define POP_PER_ISLAND 256
-#define NUM_ISLANDS 7
-#define GENERATIONS 100
+#endif
 
 struct Individual {
     MEMBERS
@@ -120,25 +134,33 @@ float avg_fitness(Individual* pop, int n)
     return sum / n;
 }
 
-Individual run()
+Individual run(int generations, int gens_each = 500)
 {
     Individual pop[NUM_ISLANDS * POP_PER_ISLAND];
     Individual *d_pop;
-    cudaMalloc((void**) &d_pop,
-	       sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND));
-    cudaMemcpy(d_pop, pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
-	       cudaMemcpyHostToDevice);
+    gpuErrchk(cudaMalloc((void**) &d_pop,
+			 sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND)));
+    gpuErrchk(cudaMemcpy(d_pop, pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
+			 cudaMemcpyHostToDevice));
 
     Individual boat[NUM_ISLANDS];
     Individual *d_boat;
-    cudaMalloc((void**) &d_boat, sizeof(Individual) * NUM_ISLANDS);
-    cudaMemcpy(d_boat, boat, sizeof(Individual) * NUM_ISLANDS,
-	       cudaMemcpyHostToDevice);
+    gpuErrchk(cudaMalloc((void**) &d_boat, sizeof(Individual) * NUM_ISLANDS));
+    gpuErrchk(cudaMemcpy(d_boat, boat, sizeof(Individual) * NUM_ISLANDS,
+			 cudaMemcpyHostToDevice));
 
-    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, GENERATIONS);
+    for (int i = 0; i < generations / gens_each; i++)
+    {
+	evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, gens_each);
+	gpuErrchk(cudaPeekAtLastError());
+	gpuErrchk(cudaDeviceSynchronize());
+    }
+    evolve<<<NUM_ISLANDS, POP_PER_ISLAND>>>(d_pop, d_boat, generations % gens_each);
+    gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaDeviceSynchronize());
 
-    cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
-	       cudaMemcpyDeviceToHost);
+    gpuErrchk(cudaMemcpy(pop, d_pop, sizeof(Individual) * (NUM_ISLANDS * POP_PER_ISLAND),
+			 cudaMemcpyDeviceToHost));
 
     float max_fitness = pop[0].fitness;
     int best_index = 0;
