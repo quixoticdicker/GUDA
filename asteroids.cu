@@ -150,7 +150,7 @@ __device__ float Individual::evaluate()
 	if (d < roids_r[i]) fitness++;
     }
     return fitness;
-
+}
     /*
     // xMutagen, yMutagen, mMutagen
     int xMutagen = 0;
@@ -187,7 +187,6 @@ __device__ float Individual::evaluate()
     i ^= thetaMutagen;
     theta = * (float *) &i;
     */
-}
 
 __device__ void Individual::mutate()
 {

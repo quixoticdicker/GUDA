@@ -64,7 +64,7 @@ This code is a) very confusing and b) sometimes dangerous. Since there are a ran
 ```C++
 __device__ void mutate()
 {
-	sqrtTwo = cleopatra() * 5.0f;
+	sqrtTwo += cleopatra() * 5.0f;
 }
 ```
 This will add a random number to sqrtTwo that is centered at 0 and has a standard deviation of 5. You'll notice this cleopatra() function. This is another function that we provide that returns a normally distributed float that is centered at 0 and has a standard deviation of 1. This code is much simpler, less prone to error, and should provide similar results.
