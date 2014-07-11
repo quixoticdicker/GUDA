@@ -60,7 +60,7 @@ __device__ void mutate()
 	sqrtTwo = *(float*) &i; // store this value back into sqrtTwo
 }
 ```
-This code is a) very confusing and b) sometimes dangerous. Since there are a range of numbers that are considered not a number (nan), we may accidentally find one of these instead of just changing the value slightly. We encourage you, instead, to alter your variables with a normal distribution. This would look like:
+This code is a) very confusing and b) sometimes dangerous. Since there are a range of numbers that are considered not a number (nan), we may accidentally find one of these instead of just changing the value. We encourage you, instead, to alter your variables with a normal distribution. This would look like:
 ```C++
 __device__ void mutate()
 {
@@ -85,4 +85,45 @@ __device__ float evaluate()
 ```
 We know that our guess, when multiplied with itself, should be two. We find the magnitude of the difference, and take the negative to ensure that a smaller difference corresponds with a higher fitness. For example, if sqrtTwo actually equals the square root of two, the function would return 0 and if sqrtTwo was 4, the function would return -14 (-|4 * 4 - 2| = -|16 - 2| = - |14| = -14). You'll notice that we're using the fabsf() function which is a function in CUDA's math library. You can find all math functions that are usable in CUDA [here](http://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__SINGLE.html#group__CUDA__MATH__SINGLE).
 
-Now you should be good to go!
+We will still rely on you to write your own main function. In your main function you just call the function run() which returns a pointer to the best Individual.
+
+There are some other parameters that you can play with to try to get the most out of your custom genetic algorithm. For example, you can choose things like the population size and the number of generations. Because of the architecture of NVIDIA graphics cards, we split the population into islands. You can define a number of islands and a population per island. For example, say we wanted 7 islands, 100 individuals per island, and 200 generations; this would look like:
+```C++
+#define POP_PER_ISLAND 100
+#define NUM_ISLANDS 7
+#define GENERATIONS 200
+```
+We also have some features that can be used to speed up the process. One of these is the SELECT_MUTATION feature. This feature only allows a mutation to occur if the resulting individual has a higher fitness. To enable this feature, define SELECT_MUTATION.
+```C++
+#define SELECT_MUTATION
+```
+
+There may also be some times when all of your threads access the same data. For example, look at [this problem](https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=622&page=show_problem&problem=4532) from the 2014 ICPC. We implement a genetic algorithm solution to this problem where the members of the population are possible beams defined by a point and a slope. To evaluate a beam, a thread needs to access the locations and radii of each asteroid. We are able to do this using constant memory. We define constant memory before the include "guda.h". This would look like:
+```C++
+#define NUM_ROIDS 5
+__constant__ float roids_x[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
+__constant__ float roids_y[] = {-80.0f, 10.0f, 41.0f, 81.0f, 96.0f};
+__constant__ float roids_r[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+
+// some other defines etc.
+
+#include "guda.h"
+```
+Here we have defined five asteroids along the line y = x, all with a radius of 1.0. You can then easily access this data from your evaluate function just as if it were a global variable.
+```C++
+for (i = 0; i < NUM_ROIDS; i++)
+    {
+		xa = roids_x[i];
+		ya = roids_y[i];
+		bp = ya - mp * xa;
+	
+		xs = (bp - b)/(m - mp);
+		ys = m * xs + b;
+	
+		xd = xa - xs;
+		yd = ya - ys;
+		d = sqrtf(xd * xd + yd * yd);
+	
+		if (d < roids_r[i]) fitness++;
+    }
+```
