@@ -130,8 +130,16 @@ __device__ float Individual::evaluate()
     float m, b, mp, bp, xa, ya, xs, ys, d, xd, yd;
     int i;
     float fitness = 0.0f;
-    m = sinf(theta) / cosf(theta);
-    b = y - m * x;
+	float cosTheta = cosf(theta);
+	if(cosTheta == 0)
+	{
+		m = 9999999.0f;
+	}
+	else
+	{
+		m = sinf(theta) / cosf(theta);
+	}
+	b = y - m * x;
     mp = -1.0f / m;
     
     for (i = 0; i < NUM_ROIDS; i++)
