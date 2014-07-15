@@ -136,18 +136,18 @@ __device__ float Individual::evaluate()
     
     for (i = 0; i < NUM_ROIDS; i++)
     {
-	xa = roids_x[i];
-	ya = roids_y[i];
-	bp = ya - mp * xa;
+		xa = roids_x[i];
+		ya = roids_y[i];
+		bp = ya - mp * xa;
 	
-	xs = (bp - b)/(m - mp);
-	ys = m * xs + b;
+		xs = (bp - b)/(m - mp);
+		ys = m * xs + b;
 	
-	xd = xa - xs;
-	yd = ya - ys;
-	d = sqrtf(xd * xd + yd * yd);
+		xd = xa - xs;
+		yd = ya - ys;
+		d = sqrtf(xd * xd + yd * yd);
 	
-	if (d < roids_r[i]) fitness++;
+		fitness += d < roids_r[i] ? 1 : roids_r[i] / d; //if (d < roids_r[i]) fitness++;
     }
     return fitness;
 }

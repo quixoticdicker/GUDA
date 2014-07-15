@@ -95,23 +95,23 @@ __global__ void evolve(Individual* pop, Individual* boat, int generations, bool 
 	
     for (int g = 0; g < generations; g++)
     {
-	int a = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
-	int b = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
-	newPop[threadIdx.x] = arena(oldPop[a], oldPop[b]);
+		int a = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
+		int b = (int)(pharaohRand() * RAND_MAX) % POP_PER_ISLAND;
+		newPop[threadIdx.x] = arena(oldPop[a], oldPop[b]);
 	
-	newPop[threadIdx.x].master_mutate();
-	//crossover(newPop[threadIdx.x]);
+		newPop[threadIdx.x].master_mutate();
+		//crossover(newPop[threadIdx.x]);
 
-	__syncthreads();
+		__syncthreads();
 	
-	boat[(blockIdx.x + 1) % NUM_ISLANDS] = newPop[0];
-	__syncthreads();
-	newPop[0] = boat[blockIdx.x];
+		boat[(blockIdx.x + 1) % NUM_ISLANDS] = newPop[0];
+		__syncthreads();
+		newPop[0] = boat[blockIdx.x];
 		
-	__syncthreads();
+		__syncthreads();
 		
-	oldPop[threadIdx.x] = newPop[threadIdx.x];
-	__syncthreads();
+		oldPop[threadIdx.x] = newPop[threadIdx.x];
+		__syncthreads();
     }
 
     pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
