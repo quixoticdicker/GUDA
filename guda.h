@@ -51,6 +51,7 @@ __device__ void Individual::master_mutate()
 #endif
     mutate();
     master_evaluate();
+
 #ifdef SELECT_MUTATION
     if (old.getFitness() > getFitness())
     {
@@ -114,8 +115,9 @@ __global__ void evolve(Individual* pop, Individual* boat, int generations, bool 
 		__syncthreads();
     }
 
-    pop[threadIdx.x + blockIdx.x * blockDim.x] = newPop[threadIdx.x];
+    pop[threadIdx.x + blockIdx.x * blockDim.x] = oldPop[threadIdx.x];
 	
+    __syncthreads();
     oldPop[threadIdx.x].destroy();
     newPop[threadIdx.x].destroy();
 }

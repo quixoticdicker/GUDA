@@ -157,6 +157,7 @@ __device__ float Individual::evaluate()
 	
 		fitness += d < roids_r[i] ? 1 : roids_r[i] / d; //if (d < roids_r[i]) fitness++;
     }
+
     return fitness;
 }
     /*
