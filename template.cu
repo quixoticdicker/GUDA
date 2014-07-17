@@ -2,9 +2,12 @@
 
 #define SELECT_MUTATION 1
 
-#include "guda.h"
+//#define NUM_ISLANDS 21
+//#define POP_PER_ISLAND 256
 
 // put any defines or anything in constant memory here
+
+#include "guda.h"
 
 /**
  * Initialization for your individuals.
