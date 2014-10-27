@@ -129,3 +129,4 @@ for (i = 0; i < NUM_ROIDS; i++)
 		if (d < roids_r[i]) fitness++;
     }
 ```
+If you already know some CUDA, this should be enough information to get you started. We're still working on cleaning up the educational side of the project, so if you'd like to learn more, keep an eye out in the future.
